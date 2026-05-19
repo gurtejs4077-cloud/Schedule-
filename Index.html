@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Gurtej's Daily System</title>
+  <style>
+    :root {
+      --bg: #000000;
+      --card: #1C1C1E;
+      --card-hover: #2C2C2E;
+      --text: #FFFFFF;
+      --text-sec: #8E8E93;
+      --blue: #0A84FF;
+      --green: #30D158;
+      --red: #FF453A;
+      --orange: #FF9F0A;
+      --purple: #BF5AF2;
+      --separator: rgba(84, 84, 88, 0.65);
+      --glass: rgba(28, 28, 30, 0.75);
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      margin: 0;
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      padding-bottom: 90px; /* Space for tab bar */
+    }
+
+    /* Typography */
+    h1 {
+      font-size: 34px;
+      font-weight: 700;
+      letter-spacing: 0.4px;
+      margin: 0 0 8px 0;
+    }
+    
+    .subtitle {
+      font-size: 13px;
+      text-transform: uppercase;
+      color: var(--text-sec);
+      letter-spacing: 1px;
+      font-weight: 600;
+      margin-bottom: 24px;
+    }
+
+    /* Layout */
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 40px 20px 20px;
+    }
+
+    /* Views */
+    .view {
+      display: none;
+      animation: fadeIn 0.3s ease;
+    }
+    .view.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(5px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Cards */
+    .card {
+      background: var(--card);
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 16px;
+    }
+
+    /* Hero / Today View */
+    .live-time {
+      font-size: 15px;
+      color: var(--red);
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+    .current-task {
+      font-size: 28px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      line-height: 1.2;
+    }
+    .next-task {
+      font-size: 15px;
+      color: var(--text-sec);
+    }
+
+    /* Stats Grid */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      margin-top: 24px;
+    }
+    .stat-box {
+      background: var(--card);
+      border-radius: 14px;
+      padding: 16px;
+    }
+    .stat-val {
+      font-size: 24px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+    .stat-label {
+      font-size: 12px;
+      color: var(--text-sec);
+      font-weight: 500;
+    }
+
+    /* Schedule List */
+    .schedule-list {
+      background: var(--card);
+      border-radius: 16px;
+      overflow: hidden;
+    }
+    .schedule-item {
+      padding: 16px 20px;
+      border-bottom: 0.5px solid var(--separator);
+      display: flex;
+      gap: 16px;
+      align-items: flex-start;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .schedule-item:last-child {
+      border-bottom: none;
+    }
+    .schedule-item:active {
+      background: var(--card-hover);
+    }
+    .schedule-time {
+      font-size: 13px;
+      color: var(--text-sec);
+      font-weight: 500;
+      min-width: 80px;
+      padding-top: 2px;
+    }
+    .schedule-content {
+      flex: 1;
+    }
+    .schedule-title {
+      font-size: 17px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .schedule-badge {
+      font-size: 10px;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .schedule-tasks {
+      display: none;
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 0.5px solid var(--separator);
+    }
+    .schedule-item.expanded .schedule-tasks {
+      display: block;
+      animation: fadeIn 0.2s ease;
+    }
+    .task-bullet {
+      font-size: 14px;
+      color: var(--text-sec);
+      margin-bottom: 6px;
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+    }
+    .task-bullet::before {
+      content: '•';
+      color: currentColor;
+    }
+    .pulse-indicator {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--red);
+      box-shadow: 0 0 8px var(--red);
+      animation: pulse 2s infinite;
+      margin-top: 6px;
+    }
+
+    /* Tasks / To-Do View */
+    .input-group {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+    input[type="text"], select {
+      background: var(--card);
+      border: none;
+      color: var(--text);
+      padding: 14px 16px;
+      border-radius: 12px;
+      font-size: 17px;
+      font-family: inherit;
+      outline: none;
+      -webkit-appearance: none;
+    }
+    input[type="text"]::placeholder {
+      color: var(--text-sec);
+    }
+    button.primary {
+      background: var(--blue);
+      color: #fff;
+      border: none;
+      padding: 14px;
+      border-radius: 12px;
+      font-size: 17px;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+    }
+    button.primary:active {
+      opacity: 0.8;
+    }
+    .todo-list {
+      background: var(--card);
+      border-radius: 16px;
+      overflow: hidden;
+    }
+    .todo-item {
+      padding: 16px 20px;
+      border-bottom: 0.5px solid var(--separator);
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .todo-item:last-child {
+      border-bottom: none;
+    }
+    .todo-item.completed .todo-text {
+      text-decoration: line-through;
+      color: var(--text-sec);
+    }
+    .ios-checkbox {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      border: 1.5px solid var(--text-sec);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+    .todo-item.completed .ios-checkbox {
+      background: var(--blue);
+      border-color: var(--blue);
+    }
+    .todo-item.completed .ios-checkbox::after {
+      content: '✓';
+      color: white;
+      font-size: 14px;
+      font-weight: bold;
+    }
+    .todo-text {
+      flex: 1;
+      font-size: 17px;
+    }
+    .todo-delete {
+      background: none;
+      border: none;
+      color: var(--red);
+      font-size: 15px;
+      padding: 4px 8px;
+      cursor: pointer;
+    }
+
+    /* Rules List */
+    .rules-list {
+      background: var(--card);
+      border-radius: 16px;
+      padding: 4px 0;
+    }
+    .rule-item {
+      padding: 12px 20px;
+      font-size: 15px;
+      color: var(--text-sec);
+      border-bottom: 0.5px solid var(--separator);
+    }
+    .rule-item:last-child { border-bottom: none; }
+
+    /* Bottom Tab Bar */
+    .tab-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 83px;
+      background: var(--glass);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-top: 0.5px solid var(--separator);
+      display: flex;
+      justify-content: space-around;
+      padding-top: 8px;
+      padding-bottom: 24px;
+      z-index: 100;
+    }
+    .tab-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      color: var(--text-sec);
+      cursor: pointer;
+      width: 33%;
+    }
+    .tab-item.active {
+      color: var(--blue);
+    }
+    .tab-icon {
+      font-size: 24px;
+    }
+    .tab-label {
+      font-size: 10px;
+      font-weight: 500;
+    }
+
+    /* iOS Notification Toast */
+    .toast-container {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 1000;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      width: 90%;
+      max-width: 400px;
+    }
+    .toast {
+      background: var(--glass);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 0.5px solid var(--separator);
+      color: var(--text);
+      padding: 16px;
+      border-radius: 20px;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      animation: slideDown 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    }
+    .toast-icon {
+      background: var(--red);
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+    .toast-content { flex: 1; }
+    .toast-title { font-weight: 600; font-size: 15px; margin-bottom: 2px; }
+    .toast-desc { font-size: 14px; color: var(--text-sec); }
+
+    @keyframes slideDown {
+      from { transform: translateY(-100%); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+    @keyframes fadeOutUp {
+      from { transform: translateY(0); opacity: 1; }
+      to { transform: translateY(-100%); opacity: 0; }
+    }
+  </style>
+
+  <link rel="manifest" href="data:application/manifest+json;charset=utf-8,%7B%22name%22%3A%20%22Gurtej%27s%20Daily%20System%22%2C%20%22short_name%22%3A%20%22Daily%20System%22%2C%20%22display%22%3A%20%22standalone%22%2C%20%22background_color%22%3A%20%22%23000000%22%2C%20%22theme_color%22%3A%20%22%2
+
